@@ -1,59 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>GPS Map</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<style>
-#map {
-height: 600px;
-width: 100%;
-}
-</style>
-
+  <title>Irish Benchmarks Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2UnVu6Gd3zz5kLhg8hJ8gRoSPg0WwT+J+Jr4xX8=" crossorigin=""/>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-oT8Rtmms2V0HNhx0p2g0b2LwM5u1y6CUG8Xq4Nf7kD8=" crossorigin=""></script>
+  
+  <style>
+    #map { height: 100vh; }
+  </style>
 </head>
-
 <body>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <script>
+    // Initialize the map centered on Ireland
+    var map = L.map('map').setView([53.3, -6.4], 8);
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-<script>
+    // Google Sheet JSON URL (first tab)
+    const sheetUrl = "https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/1";
 
-const map = L.map('map').setView([53.34, -6.26], 12);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
- attribution: '© OpenStreetMap'
-}).addTo(map);
-
-fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/Sheet1")
-.then(response => response.json())
-.then(data => {
-
- data.forEach(row => {
-
-   const lat = parseFloat(row.lat);
-   const lng = parseFloat(row.lng);
-
-   if (!isNaN(lat) && !isNaN(lng)) {
-
-     const marker = L.marker([lat, lng]).addTo(map);
-
-     marker.bindPopup(
-       "<b>" + (row.name || "Point") + "</b><br>" +
-       (row.description || "")
-     );
-
-   }
-
- });
-
-});
-
-</script>
-
+    // Fetch data and add markers
+    fetch(sheetUrl)
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(row => {
+          // Ensure lat/lng exist and are numbers
+          if (row.Lat && row.Lon) {
+            const lat = parseFloat(row.Lat);
+            const lon = parseFloat(row.Lon);
+            const name = row.Name || "No Name";
+            const condition = row.Condition || "";
+            
+            // Add marker to map
+            L.marker([lat, lon]).addTo(map)
+              .bindPopup(`<b>${name}</b><br>Condition: ${condition}`);
+          }
+        });
+      })
+      .catch(err => console.error("Error loading sheet data:", err));
+  </script>
 </body>
 </html>
