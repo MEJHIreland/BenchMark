@@ -10,7 +10,10 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Leaflet AwesomeMarkers (for colored pins) -->
+<!-- FontAwesome (for AwesomeMarkers icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<!-- Leaflet AwesomeMarkers (colored pins) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js"></script>
 
@@ -38,7 +41,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-// Create cluster group
+// Create a marker cluster group
 var markers = L.markerClusterGroup();
 
 // Define colored markers
@@ -54,18 +57,17 @@ var redMarker = L.AwesomeMarkers.icon({
     prefix: 'fa'
 });
 
-// Fetch data from Google Sheet (OpenSheet API)
+// Fetch data from Google Sheet using OpenSheet API
 fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/Sheet1")
 .then(res => res.json())
 .then(data => {
-
   data.forEach(row => {
     var lat = parseFloat(row.Lat);
     var lon = parseFloat(row.Lon);
 
     if (!isNaN(lat) && !isNaN(lon)) {
-      // Choose marker color based on Found column
-      var markerIcon = (row.Found.toLowerCase() === 'yes') ? greenMarker : redMarker;
+      // Decide marker color based on Found column
+      var markerIcon = (row.Found && row.Found.toLowerCase() === 'yes') ? greenMarker : redMarker;
 
       var marker = L.marker([lat, lon], {icon: markerIcon})
         .bindPopup(
@@ -74,16 +76,17 @@ fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/She
           "Condition: " + row.Condition
         );
 
-      // Add to cluster group
+      // Add marker to the cluster group
       markers.addLayer(marker);
     }
   });
 
-  // Add all clustered markers to the map
+  // Add cluster group to map
   map.addLayer(markers);
-
+})
+.catch(err => {
+  console.error("Error loading sheet data:", err);
 });
-
 </script>
 </body>
 </html>
