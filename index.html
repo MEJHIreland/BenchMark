@@ -41,9 +41,12 @@ if(!isNaN(lat) && !isNaN(lon)){
 L.marker([lat, lon])
 .addTo(map)
 .bindPopup(
-"<b>" + row.Name + "</b><br>" +
+"<b>" + "Benchmark Details: " + "</b><br>" +
+"ID: " + row.ID + "<br>" +
+"Town: " + row.Town + "<br>" +
+"Location: " + row.Location + "<br>" +
 "Found: " + row.Found + "<br>" +
-"Condition: " + row.Condition
+"Condition: " + row.Condition + "<br>" +
 );
 
 }
