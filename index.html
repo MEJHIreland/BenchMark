@@ -4,55 +4,86 @@
 <meta charset="utf-8" />
 <title>Benchmark Map</title>
 
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet AwesomeMarkers (for colored pins) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js"></script>
+
+<!-- Leaflet MarkerCluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <style>
 #map {
-height: 100vh;
+  height: 100vh;
 }
 </style>
 </head>
 
 <body>
-
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-
+// Initialize the map
 var map = L.map('map').setView([52.7993, -6.46], 14);
 
+// Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-maxZoom: 19
+  maxZoom: 19
 }).addTo(map);
 
+// Create cluster group
+var markers = L.markerClusterGroup();
+
+// Define colored markers
+var greenMarker = L.AwesomeMarkers.icon({
+    icon: 'check',
+    markerColor: 'green',
+    prefix: 'fa'
+});
+
+var redMarker = L.AwesomeMarkers.icon({
+    icon: 'times',
+    markerColor: 'red',
+    prefix: 'fa'
+});
+
+// Fetch data from Google Sheet (OpenSheet API)
 fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/Sheet1")
 .then(res => res.json())
 .then(data => {
 
-data.forEach(row => {
+  data.forEach(row => {
+    var lat = parseFloat(row.Lat);
+    var lon = parseFloat(row.Lon);
 
-var lat = parseFloat(row.Lat);
-var lon = parseFloat(row.Lon);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      // Choose marker color based on Found column
+      var markerIcon = (row.Found.toLowerCase() === 'yes') ? greenMarker : redMarker;
 
-if(!isNaN(lat) && !isNaN(lon)){
+      var marker = L.marker([lat, lon], {icon: markerIcon})
+        .bindPopup(
+          "<b>" + row.Name + "</b><br>" +
+          "Found: " + row.Found + "<br>" +
+          "Condition: " + row.Condition
+        );
 
-L.marker([lat, lon])
-.addTo(map)
-.bindPopup(
-"<b>" + row.Name + "</b><br>" +
-"Found: " + row.Found + "<br>" +
-"Condition: " + row.Condition
-);
+      // Add to cluster group
+      markers.addLayer(marker);
+    }
+  });
 
-}
-
-});
+  // Add all clustered markers to the map
+  map.addLayer(markers);
 
 });
 
 </script>
-
 </body>
 </html>
