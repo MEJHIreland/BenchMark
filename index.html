@@ -4,89 +4,55 @@
 <meta charset="utf-8" />
 <title>Benchmark Map</title>
 
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- FontAwesome (for AwesomeMarkers icons) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-<!-- Leaflet AwesomeMarkers (colored pins) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js"></script>
-
-<!-- Leaflet MarkerCluster -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <style>
 #map {
-  height: 100vh;
+height: 100vh;
 }
 </style>
 </head>
 
 <body>
+
 <div id="map"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-// Initialize the map
+
 var map = L.map('map').setView([52.7993, -6.46], 14);
 
-// Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
+maxZoom: 19
 }).addTo(map);
 
-// Create a marker cluster group
-var markers = L.markerClusterGroup();
-
-// Define colored markers
-var greenMarker = L.AwesomeMarkers.icon({
-    icon: 'check',
-    markerColor: 'green',
-    prefix: 'fa'
-});
-
-var redMarker = L.AwesomeMarkers.icon({
-    icon: 'times',
-    markerColor: 'red',
-    prefix: 'fa'
-});
-
-// Fetch data from Google Sheet using OpenSheet API
 fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/Sheet1")
 .then(res => res.json())
 .then(data => {
-  data.forEach(row => {
-    var lat = parseFloat(row.Lat);
-    var lon = parseFloat(row.Lon);
 
-    if (!isNaN(lat) && !isNaN(lon)) {
-      // Decide marker color based on Found column
-      var markerIcon = (row.Found && row.Found.toLowerCase() === 'yes') ? greenMarker : redMarker;
+data.forEach(row => {
 
-      var marker = L.marker([lat, lon], {icon: markerIcon})
-        .bindPopup(
-          "<b>" + row.Name + "</b><br>" +
-          "Found: " + row.Found + "<br>" +
-          "Condition: " + row.Condition
-        );
+var lat = parseFloat(row.Lat);
+var lon = parseFloat(row.Lon);
 
-      // Add marker to the cluster group
-      markers.addLayer(marker);
-    }
-  });
+if(!isNaN(lat) && !isNaN(lon)){
 
-  // Add cluster group to map
-  map.addLayer(markers);
-})
-.catch(err => {
-  console.error("Error loading sheet data:", err);
+L.marker([lat, lon])
+.addTo(map)
+.bindPopup(
+"<b>" + row.Name + "</b><br>" +
+"Found: " + row.Found + "<br>" +
+"Condition: " + row.Condition
+);
+
+}
+
 });
+
+});
+
 </script>
+
 </body>
 </html>
