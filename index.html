@@ -1,11 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Benchmark Map</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+#map {
+height: 100vh;
+}
+</style>
 </head>
 
 <body>
-<h1>BenchMark Map</h1>
-<p>If you see this, GitHub Pages works.</p>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+var map = L.map('map').setView([52.7993, -6.46], 14);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+maxZoom: 19
+}).addTo(map);
+
+fetch("https://opensheet.elk.sh/1-lFWOYdCAhC08rXLFVqCJh0WYNUgEIgv-AF9IDGU8yo/Sheet1")
+.then(res => res.json())
+.then(data => {
+
+data.forEach(row => {
+
+var lat = parseFloat(row.Lat);
+var lon = parseFloat(row.Lon);
+
+if(!isNaN(lat) && !isNaN(lon)){
+
+L.marker([lat, lon])
+.addTo(map)
+.bindPopup(
+"<b>" + row.Name + "</b><br>" +
+"Found: " + row.Found + "<br>" +
+"Condition: " + row.Condition
+);
+
+}
+
+});
+
+});
+
+</script>
+
 </body>
 </html>
